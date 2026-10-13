@@ -1,0 +1,281 @@
+# Team manifest. `scripts/build.mjs` combines this file with agents/,
+# playbooks/, and skills/ and writes the importable packages to dist/.
+
+id: saas-ops
+release: 0.4.1
+name: SaaS Ops
+tagline: Product, engineering, QA, infrastructure, support, market, and marketing to build and run SaaS products.
+summary: >-
+  A seven-bot team that runs SaaS products end to end. The PM and Chief of
+  Staff turns ideas into specs and tickets and coordinates the team. The
+  Software Engineer builds, QA verifies every change with evidence and files
+  bug tickets, and Infrastructure keeps servers, logs, and performance under
+  control. Support answers users and escalates bugs to QA. The Market Analyst
+  tracks competitors, trends, and pain points, and the Marketing Analyst
+  studies ads and trending content and proposes creatives. The founder
+  approves anything irreversible, paid, or public.
+category: Operations
+author:
+  name: Gustavo Vasconcelos
+license: MIT
+tags:
+  - saas
+  - product management
+  - engineering
+  - qa
+  - infrastructure
+  - support
+  - market research
+  - marketing
+outcomes:
+  - Turn ideas into prioritized specs and tickets
+  - Ship features and fixes as reviewable PRs with tests and a rollback plan
+  - Verify every change with screenshots, recordings, logs, and adversarial tests
+  - Keep production observable, fast, and cheap, with documented incidents
+  - Answer tickets and get every bug to QA with everything needed to reproduce it
+  - Keep living competitor profiles and a map of user pain points
+  - Propose creatives and video scripts based on what is performing
+setupMinutes: 20
+
+team:
+  name: SaaS Ops
+  # Alfredo is the Chief of Staff. In OpenMausBot, the Chief of Staff's
+  # approval level flows down to the work it delegates, so keep Alfredo on
+  # Ask or Approve for me (see README.md).
+  leader: pm
+  brief: brief.md
+
+requirements:
+  apps:
+    - slug: github
+      label: GitHub
+      reason: Repositories, issues, pull requests, and CI checks.
+    - slug: linear
+      label: Linear
+      reason: Alternative to GitHub Issues for tickets and bugs.
+      optional: true
+    - slug: sentry
+      label: Sentry
+      reason: Production errors that Infrastructure triages and QA investigates.
+      optional: true
+    - slug: gmail
+      label: Gmail
+      reason: Support inbox, until there is a help desk tool.
+      optional: true
+    - slug: intercom
+      label: Intercom
+      reason: Support tickets and chat with users.
+      optional: true
+    - slug: slack
+      label: Slack
+      reason: Alerts, release notices, and weekly summaries.
+      optional: true
+    - slug: notion
+      label: Notion
+      reason: Shared knowledge base (profiles, pain points, creatives, support).
+      optional: true
+    - slug: reddit
+      label: Reddit
+      reason: Social listening for user pain points and requests.
+      optional: true
+    - slug: youtube
+      label: YouTube
+      reason: Research on organic videos and comments about competitors.
+      optional: true
+  capabilities:
+    - agents
+    - connected-apps
+    - local-files
+    - computer
+  platforms:
+    - any
+
+# Sidebar order.
+agents:
+  - pm
+  - engineer
+  - qa
+  - infra
+  - support
+  - market
+  - marketing
+
+rooms:
+  - key: leadership
+    name: Leadership
+    members: [pm, engineer, qa, infra, support, market, marketing]
+    defaultResponder: { kind: agent, agent: pm }
+    bulletin: >-
+      The general room with the founder. Alfredo answers by default, routes
+      to the owner, and consolidates replies; mention a bot to talk to it
+      directly. Monday planning, Friday review, roadmap prioritization, and
+      decisions that span product, engineering, and growth happen here.
+      Proposals come with context, options, a recommendation, and what needs
+      approval.
+  - key: engineering
+    name: Engineering
+    members: [engineer, qa, infra]
+    defaultResponder: { kind: agent, agent: engineer }
+    bulletin: >-
+      The build and operations room. Bento owns the code, Julie owns the
+      quality verdict, and Toby owns infrastructure and production. Flow:
+      ticket → implement with tdd (Bento) → PR → handoff to Julie → evidence
+      and adversarial tests → verdict → merge approved by the founder.
+      Production errors go through Toby's triage. Never merge to main, deploy
+      to production, run a destructive migration, or make a paid
+      infrastructure change without the founder's explicit approval. Never
+      expose secrets in issues, PRs, screenshots, or messages.
+  - key: support
+    name: Support
+    members: [support, qa]
+    defaultResponder: { kind: agent, agent: support }
+    bulletin: >-
+      The bridge between support and quality. Dora brings tickets that look
+      like bugs in the escalate-to-qa format; Julie reproduces them, files the
+      ticket, and replies with the link and what to tell the user. No
+      personal data here: identify accounts by internal ID.
+  - key: growth
+    name: Growth
+    members: [market, marketing]
+    defaultResponder: { kind: agent, agent: market }
+    bulletin: >-
+      The intelligence and acquisition room. Leide owns competitors, trends,
+      and user pain points; Luna owns ads, organic content, and creatives. Use
+      only public sources or test accounts the founder created; never bypass
+      logins, paywalls, or rate limits, and never collect personal data. Every
+      claim carries a link, an observation date, and a confidence level.
+      Nothing is published, no ad is created, and no money is spent without
+      the founder's approval. Opportunities go to Alfredo.
+
+# Every routine arrives paused. Turn them on in Automations after setting up
+# the product channel.
+routines:
+  - key: weekly-planning
+    name: Weekly planning
+    agent: pm
+    room: leadership
+    runOn: maus
+    schedule: { type: cron, expression: "30 9 * * MON", timeZone: America/Sao_Paulo }
+    durationMinutes: 45
+    overlap: skip
+    prompt: >-
+      Run the week's planning with the coordinate-team playbook. Ask each
+      member what carried over and what came up, run the prioritize-roadmap
+      playbook, and propose up to three priorities for the week to the
+      founder, with owners, what is left out, and the decisions needed.
+  - key: production-triage
+    name: Daily production triage
+    agent: infra
+    runOn: maus
+    schedule: { type: cron, expression: "0 8 * * MON-FRI", timeZone: America/Sao_Paulo }
+    durationMinutes: 30
+    overlap: skip
+    prompt: >-
+      Run the production-triage playbook for the last 24 hours (72 hours on
+      Monday). Send reproducible application bugs to Julie and handle
+      infrastructure issues. Finish with a short summary: what is new, what
+      got worse, what went away, and what needs a decision. Do not file
+      duplicate tickets.
+  - key: weekly-regression
+    name: Weekly regression of critical flows
+    agent: qa
+    runOn: maus
+    schedule: { type: cron, expression: "0 10 * * TUE", timeZone: America/Sao_Paulo }
+    durationMinutes: 60
+    overlap: skip
+    prompt: >-
+      Walk through the critical flows listed in the channel instructions
+      (signup, login, main flow, payment) on staging or preview. Capture a
+      screenshot of each step with the visual-evidence skill and file a
+      ticket for any regression. Finish with a flow × result table.
+  - key: support-queue
+    name: Support queue
+    agent: support
+    runOn: maus
+    schedule: { type: cron, expression: "0 9-18/3 * * MON-FRI", timeZone: America/Sao_Paulo }
+    durationMinutes: 30
+    overlap: skip
+    prompt: >-
+      Check new or unanswered tickets in the connected sources. For each one,
+      use the handle-ticket playbook and leave a draft reply for the founder's
+      approval. Escalate bugs to Julie and incidents to Toby. Finish with the
+      queue: new, waiting on the user, waiting on the team.
+  - key: competitor-radar
+    name: Weekly competitor radar
+    agent: market
+    runOn: maus
+    schedule: { type: cron, expression: "30 8 * * MON", timeZone: America/Sao_Paulo }
+    durationMinutes: 60
+    overlap: skip
+    prompt: >-
+      Check for changes since the last radar at the competitors listed in the
+      channel instructions: changelog, pricing page, landing page, docs, job
+      openings, posts, and launches. Record each meaningful change in the
+      competitor's profile with source, date, evidence, and confidence.
+      Ignore cosmetic changes. Finish with the three changes that matter most
+      to us and what you suggest doing. If there is no competitor list, ask
+      for one.
+  - key: pain-point-listening
+    name: Weekly pain-point listening
+    agent: market
+    runOn: maus
+    schedule: { type: cron, expression: "0 9 * * WED", timeZone: America/Sao_Paulo }
+    durationMinutes: 60
+    overlap: skip
+    prompt: >-
+      Use the voice-of-customer playbook to collect complaints, requests, and
+      praise published in the last week about our product, our competitors,
+      and the problem we solve, plus the themes Dora brought from tickets.
+      Update the pain-point map and hand Alfredo up to five evidence-backed
+      opportunities.
+  - key: ads-and-trends-radar
+    name: Weekly ads and trends radar
+    agent: marketing
+    runOn: maus
+    schedule: { type: cron, expression: "0 9 * * THU", timeZone: America/Sao_Paulo }
+    durationMinutes: 60
+    overlap: skip
+    prompt: >-
+      Use the ads-analysis playbook on the channel's competitors and on two
+      reference SaaS companies outside our segment. Then surface trending
+      organic formats and sounds for our audience. Finish with three creative
+      ideas ready for a brief and what needs approval.
+  - key: weekly-review
+    name: Weekly review
+    agent: pm
+    room: leadership
+    runOn: maus
+    schedule: { type: cron, expression: "0 16 * * FRI", timeZone: America/Sao_Paulo }
+    durationMinutes: 45
+    overlap: skip
+    prompt: >-
+      Run the weekly review with the coordinate-team playbook. Ask each
+      member for a summary of up to five lines: Bento (deliveries and
+      blockers), Julie (bugs by severity and quality), Toby (incidents,
+      performance, and cost), Dora (tickets and themes), Leide (market), and
+      Luna (creatives and channels). Consolidate them into one message for
+      the founder with: pending decisions, deliveries, quality and incidents,
+      market and marketing learnings, risks, and next week's plan.
+
+examples:
+  - title: From idea to verified PR
+    input: "@Alfredo I want to test a guided onboarding in the app. Scope it and get the team moving."
+    output: >-
+      Alfredo stress-tests the idea with questions, writes the spec and,
+      after your approval, breaks it into tickets. Bento implements each
+      ticket test-first and opens the PR; Julie reviews, tests, records the
+      screen, and returns a verdict; Luna suggests the onboarding copy. You
+      approve the merge.
+  - title: From ticket to fix
+    input: "@Dora a user says they can't apply a 100% coupon at checkout."
+    output: >-
+      Dora drafts a reply to the user for approval and escalates to Julie,
+      who reproduces it, records the screen, and files an S2 ticket. Bento
+      fixes it with a regression test; Julie verifies; Dora updates the user.
+  - title: From a market pain point to a creative
+    input: "@Leide what are the biggest complaints about competitor X? @Luna turn the top one into a creative."
+    output: >-
+      Leide delivers the pain points with links and frequency. Luna
+      cross-checks them against the competitor's active ads and delivers a
+      brief with angle, hook, a 30-second script, and test variations,
+      pending approval.

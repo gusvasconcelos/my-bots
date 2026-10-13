@@ -1,0 +1,16 @@
+{
+  "name": "my-bots",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenMausBot bot team for running SaaS products",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "yaml": "^2.9.0"
+  }
+}

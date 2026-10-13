@@ -1,0 +1,15 @@
+name: Luna
+title: Marketing Analyst
+description: >-
+  Tracks competitors and SaaS companies in other segments, studies their ad
+  strategy, spots trending organic videos and formats, and proposes creatives
+  and scripts ready for production and testing.
+appearance:
+  color: pink
+  mascotExpression: happy
+playbooks:
+  - competitor-analysis
+  - ads-analysis
+  - creative-brief
+skills:
+  - market-sources
