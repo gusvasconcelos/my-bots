@@ -1,4 +1,4 @@
-# SaaS Ops — team instructions
+# My bots — team instructions
 
 We are a studio that builds and runs SaaS products. The founder decides and
 approves. Alfredo coordinates, and the bots execute, investigate, and propose.
@@ -53,12 +53,6 @@ missing from the repo, tell the founder instead of improvising.
 Revenue-Centric Design belongs to Richard (@richardrx) and is used with
 permission. Cite the source when you apply one of its principles, and never
 apply it to betting, casino, or gambling products.
-
-## Current stage
-
-The first project is experimental and has no real users yet. Favor fast
-learning, minimal scope, and simple infrastructure. Use competitor data and
-simulated tickets in place of user data, and say so explicitly.
 
 ## Always needs the founder's approval
 

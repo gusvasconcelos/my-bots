@@ -111,7 +111,7 @@ if (errors.length) {
 
 // ── v2 package (JSON) ─────────────────────────────────────────────────────
 
-const routines = team.routines.map((routine) => ({ ...routine, enabledAfterInstall: false }));
+const routines = team.routines.map((routine) => ({ ...routine, enabledAfterInstall: true }));
 const listing = {
   id: team.id,
   release: team.release,
@@ -170,7 +170,7 @@ const markdown = [
   team.tagline,
   "> **Give this file to your Chief of Staff.** It is the complete team blueprint. Any agent system can run it; OpenMausBot can also install it directly.",
   "## Activation",
-  "Read the whole document before acting. Confirm the founder's goal and any missing inputs, then create or delegate to the roles below, preserving their names, ownership, room rules, and playbooks. If your platform cannot spawn sub-agents, perform the roles one at a time and keep their outputs separate.\n\nNever ask for pasted passwords or secret keys. Use the platform's normal connection flow. Do not send messages, publish content, spend money, delete data, or enable routines without explicit approval. All routines start paused.",
+  "Read the whole document before acting. Confirm the founder's goal and any missing inputs, then create or delegate to the roles below, preserving their names, ownership, room rules, and playbooks. If your platform cannot spawn sub-agents, perform the roles one at a time and keep their outputs separate.\n\nNever ask for pasted passwords or secret keys. Use the platform's normal connection flow. Do not send messages, publish content, spend money, delete data, without explicit approval. All routines start enabled.",
   brief.replace(/^# .*\n+/, "").replace(/^## /gm, "### "),
   "## Mission",
   team.summary.trim(),
@@ -197,7 +197,7 @@ const markdown = [
     room.bulletin.trim(),
   ].join("\n\n")).join("\n\n"),
   "## Routines",
-  routines.map((routine) => `- **${routine.name}** (${name(routine.agent)}${routine.room ? `, room \`${routine.room}\`` : ""}; \`${routine.schedule.expression}\` ${routine.schedule.timeZone}, paused): ${routine.prompt.trim()}`).join("\n"),
+  routines.map((routine) => `- **${routine.name}** (${name(routine.agent)}${routine.room ? `, room \`${routine.room}\`` : ""}; \`${routine.schedule.expression}\` ${routine.schedule.timeZone}): ${routine.prompt.trim()}`).join("\n"),
   "## Playbooks",
   playbooks.map((playbook) => [
     `### ${playbook.name}`,

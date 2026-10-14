@@ -1,9 +1,9 @@
 # Team manifest. `scripts/build.mjs` combines this file with agents/,
 # playbooks/, and skills/ and writes the importable packages to dist/.
 
-id: saas-ops
-release: 0.4.1
-name: SaaS Ops
+id: my-bots
+release: 0.5.0
+name: My bots
 tagline: Product, engineering, QA, infrastructure, support, market, and marketing to build and run SaaS products.
 summary: >-
   A seven-bot team that runs SaaS products end to end. The PM and Chief of
@@ -38,7 +38,7 @@ outcomes:
 setupMinutes: 20
 
 team:
-  name: SaaS Ops
+  name: My bots
   # Alfredo is the Chief of Staff. In OpenMausBot, the Chief of Staff's
   # approval level flows down to the work it delegates, so keep Alfredo on
   # Ask or Approve for me (see README.md).
@@ -147,8 +147,6 @@ rooms:
       Nothing is published, no ad is created, and no money is spent without
       the founder's approval. Opportunities go to Alfredo.
 
-# Every routine arrives paused. Turn them on in Automations after setting up
-# the product channel.
 routines:
   - key: weekly-planning
     name: Weekly planning
