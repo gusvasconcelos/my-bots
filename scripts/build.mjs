@@ -16,6 +16,15 @@ const fail = (message) => errors.push(message);
 const KEY = /^[a-z0-9][a-z0-9_-]*$/;
 const SKILL = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const COLORS = new Set(["green", "blue", "red", "orange", "purple", "cyan", "pink", "yellow", "teal", "coral"]);
+const CROPS = new Set(["circle", "rounded", "square"]);
+const AVATAR_MAX_BYTES = 64 * 1024;
+// Magic bytes per format: OpenMausBot rejects a picture whose bytes don't match its mime.
+const AVATAR_FORMATS = [
+  { ext: "png", mime: "image/png", matches: (b) => b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) },
+  { ext: "jpg", mime: "image/jpeg", matches: (b) => b.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])) },
+  { ext: "jpeg", mime: "image/jpeg", matches: (b) => b.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])) },
+  { ext: "webp", mime: "image/webp", matches: (b) => b.toString("latin1", 0, 4) === "RIFF" && b.toString("latin1", 8, 12) === "WEBP" },
+];
 const bytes = (text) => Buffer.byteLength(text, "utf8");
 
 function frontmatter(text, path) {
@@ -25,6 +34,20 @@ function frontmatter(text, path) {
     return { meta: {}, body: text };
   }
   return { meta: parseYaml(match[1]) ?? {}, body: match[2].trim() };
+}
+
+// agents/<key>/avatar.{png,jpg,jpeg,webp} → appearance.avatar (JSON package only).
+function avatar(dir, crop = "circle") {
+  const found = AVATAR_FORMATS.filter((format) => existsSync(join(root, dir, `avatar.${format.ext}`)));
+  if (!found.length) return undefined;
+  if (found.length > 1) fail(`${dir}: more than one avatar file`);
+  const { ext, mime, matches } = found[0];
+  const path = `${dir}/avatar.${ext}`;
+  const data = readFileSync(join(root, path));
+  if (data.length > AVATAR_MAX_BYTES) fail(`${path}: exceeds 64 KB (${Math.ceil(data.length / 1024)} KB)`);
+  if (!matches(data)) fail(`${path}: is not really a ${ext.toUpperCase()} picture`);
+  if (!CROPS.has(crop)) fail(`${dir}: avatar crop must be circle, rounded, or square`);
+  return { mime, data: data.toString("base64"), crop };
 }
 
 // ── sources ───────────────────────────────────────────────────────────────
@@ -66,6 +89,8 @@ const agents = team.agents.map((key) => {
   const memoryPath = `${dir}/MEMORY.md`;
   if (!KEY.test(key)) fail(`${dir}: invalid key`);
   if (!COLORS.has(profile.appearance?.color)) fail(`${dir}: unsupported color`);
+  const { avatarCrop, ...look } = profile.appearance ?? {};
+  const picture = avatar(dir, avatarCrop);
   if (bytes(soul) > 24_000) fail(`${dir}/SOUL.md: exceeds 24000 bytes`);
   if ((profile.description ?? "").length > 4_000) fail(`${dir}: description exceeds 4000 characters`);
   return {
@@ -74,7 +99,7 @@ const agents = team.agents.map((key) => {
     title: profile.title,
     description: profile.description,
     soul,
-    appearance: profile.appearance,
+    appearance: { ...look, ...(picture ? { avatar: picture } : {}) },
     playbooks: profile.playbooks ?? [],
     skills: profile.skills ?? [],
     ...(existsSync(join(root, memoryPath)) ? { seed: { memory: { "MEMORY.md": read(memoryPath) } } } : {}),
@@ -144,13 +169,16 @@ const v2 = {
 };
 
 // ── BotMRR Markdown v1 ────────────────────────────────────────────────────
-// v1 carries no starter memory, team brief, or room goals.
+// v1 carries no starter memory, team brief, room goals, or pictures.
 
 const v1Routines = routines.filter((routine) => !routine.room).map(({ room: _room, ...routine }) => routine);
 const v1 = {
   botmrr: 1,
   ...listing,
-  agents: agents.map(({ seed: _seed, ...agent }) => agent),
+  agents: agents.map(({ seed: _seed, ...agent }) => {
+    const { avatar: _avatar, ...appearance } = agent.appearance;
+    return { ...agent, appearance };
+  }),
   ...(team.team.leader ? { chiefOfStaff: team.team.leader } : {}),
   rooms: team.rooms,
   routines: v1Routines,
@@ -212,5 +240,6 @@ const markdown = [
 mkdirSync(join(root, "dist"), { recursive: true });
 writeFileSync(join(root, "dist", `${team.id}.openmaus.json`), `${JSON.stringify(v2, null, 2)}\n`);
 writeFileSync(join(root, "dist", `${team.id}.md`), markdown);
-console.log(`✓ dist/${team.id}.openmaus.json  (${agents.length} bots, ${playbooks.length} playbooks, ${skills.length} skills, ${routines.length} routines)`);
+const pictures = agents.filter((agent) => agent.appearance.avatar).length;
+console.log(`✓ dist/${team.id}.openmaus.json  (${agents.length} bots, ${pictures} pictures, ${playbooks.length} playbooks, ${skills.length} skills, ${routines.length} routines)`);
 console.log(`✓ dist/${team.id}.md  (BotMRR v1, ${v1Routines.length} routines; room goals and starter memory only in the JSON)`);

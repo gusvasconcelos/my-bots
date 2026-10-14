@@ -86,6 +86,7 @@ agents/<key>/
   agent.yaml                 the bot's name, title, description, color, playbooks, and skills
   SOUL.md                    the bot's standing instructions
   MEMORY.md                  starter memory (JSON package only)
+  avatar.webp                optional picture: png, jpg, or webp, up to 64 KB (JSON package only)
 playbooks/<key>.md           frontmatter (name, summary, triggers) + instructions
 skills/<name>/SKILL.md       team skills (shipped in the package)
 templates/product-channel.md template for each product channel's instructions
